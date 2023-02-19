@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 )
 
 func CreateUser(w http.ResponseWriter, r *http.Request) {
@@ -51,7 +52,24 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetAllUsers(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Get all users"))
+	nameOrNick := strings.ToLower(r.URL.Query().Get("user"))
+
+	db, err := database.Connect()
+	if err != nil {
+		response.Error(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	defer db.Close()
+
+	repository := repository.NewUsersRepository(db)
+	users, err := repository.SearchByNameOrNick(nameOrNick)
+	if err != nil {
+		response.Error(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	response.JSON(w, http.StatusOK, users)
 }
 
 func GetUser(w http.ResponseWriter, r *http.Request) {

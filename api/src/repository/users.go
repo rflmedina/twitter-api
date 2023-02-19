@@ -32,3 +32,23 @@ func (repository users) Create(user models.User) (uint64, error) {
 
 	return uint64(lastID), nil
 }
+
+func (repository users) SearchByNameOrNick(nameOrNick string) ([]models.User, error) {
+	nameOrNick = "%" + nameOrNick + "%"
+	rows, err := repository.db.Query("select id, name, nickname, email, createAt from users where name like ? or nickname like ?", nameOrNick, nameOrNick)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var users []models.User
+	for rows.Next() {
+		var user models.User
+		if err = rows.Scan(&user.ID, &user.Name, &user.Nickname, &user.Email, &user.CreatedAt); err != nil {
+			return nil, err
+		}
+		users = append(users, user)
+	}
+
+	return users, nil
+}
