@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	fmt.Println("Hello, World!")
+	fmt.Println("Server running at port: 5000 | Have fun! :D")
 
 	r := router.Generate()
 
