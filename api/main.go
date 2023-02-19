@@ -10,7 +10,7 @@ import (
 func main() {
 	fmt.Println("Hello, World!")
 
-	route := router.Generate()
+	r := router.Generate()
 
-	log.Fatal(http.ListenAndServe(":5000", route))
+	log.Fatal(http.ListenAndServe(":5000", r))
 }
