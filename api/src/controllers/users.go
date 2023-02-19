@@ -6,13 +6,13 @@ import (
 	"api/src/repository"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 )
 
 func CreateUser(w http.ResponseWriter, r *http.Request) {
-	bodyRequest, err := ioutil.ReadAll(r.Body)
+	bodyRequest, err := io.ReadAll(r.Body)
 	if err != nil {
 		log.Fatal("Error reading request body", err)
 	}
@@ -26,6 +26,8 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Fatal("Error connecting to database", err)
 	}
+
+	defer db.Close()
 
 	repository := repository.NewUsersRepository(db)
 	userID, err := repository.Create(user)
