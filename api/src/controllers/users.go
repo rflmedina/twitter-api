@@ -4,27 +4,30 @@ import (
 	"api/database"
 	"api/src/models"
 	"api/src/repository"
+	"api/src/response"
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 )
 
 func CreateUser(w http.ResponseWriter, r *http.Request) {
 	bodyRequest, err := io.ReadAll(r.Body)
 	if err != nil {
-		log.Fatal("Error reading request body", err)
+		response.Error(w, http.StatusUnprocessableEntity, err)
+		return
 	}
 
 	var user models.User
 	if err = json.Unmarshal(bodyRequest, &user); err != nil {
-		log.Fatal("Error unmarshalling request body", err)
+		response.Error(w, http.StatusBadRequest, err)
+		return
 	}
 
 	db, err := database.Connect()
 	if err != nil {
-		log.Fatal("Error connecting to database", err)
+		response.Error(w, http.StatusInternalServerError, err)
+		return
 	}
 
 	defer db.Close()
@@ -32,10 +35,13 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 	repository := repository.NewUsersRepository(db)
 	userID, err := repository.Create(user)
 	if err != nil {
-		log.Fatal(err)
+		response.Error(w, http.StatusInternalServerError, err)
+		return
 	}
 
-	w.Write([]byte(fmt.Sprintf("User created with id %d", userID)))
+	userID = uint64(user.ID)
+
+	response.JSON(w, http.StatusCreated, "User created successfully with ID: "+fmt.Sprint(userID))
 
 }
 
